@@ -1,0 +1,33 @@
+<web-app>
+  <servlet>
+  <servlet-name>InsertServlet</servlet-name>
+  <servlet-class>InsertServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+  <servlet-name>InsertServlet</servlet-name>
+  <url-pattern>/insert</url-pattern>
+  </servlet-mapping>
+
+
+
+  <servlet>
+  <servlet-name>InsertFileServlet</servlet-name>
+  <servlet-class>InsertFileServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+  <servlet-name>InsertFileServlet</servlet-name>
+  <url-pattern>/insertfile</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+  <servlet-name>ViewServlet</servlet-name>
+  <servlet-class>ViewServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+  <servlet-name>ViewServlet</servlet-name>
+  <url-pattern>/view</url-pattern>
+  </servlet-mapping>
+</web-app>

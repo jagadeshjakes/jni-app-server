@@ -1,0 +1,95 @@
+#include <jni.h>
+#include <iostream>
+#include "NativeService.h"
+#include<windows.h>
+
+JNIEXPORT jboolean JNICALL Java_NativeService_insert(JNIEnv *env, jobject thisobj, jobject user){
+  //printf("djnj");
+  jclass userClass=(*env)->GetObjectClass(env,user);
+  jmethodID classInit =  (*env)->GetMethodID(env, userClass, "<init>", "()V");
+  jmethodID getId =  (*env)->GetMethodID(env, userClass, "getId", "()I");
+  jmethodID getName =  (*env)->GetMethodID(env, userClass, "getName", "()Ljava/lang/String;");
+  jmethodID getPercentage =  (*env)->GetMethodID(env, userClass, "getPercentage", "()D");
+
+  jobject obj=(*env)->NewObject(env, userClass, classInit);
+  obj=user;
+  jint id=(*env)->CallIntMethod(env,obj,getId);
+  jstring tname=(*env)->CallObjectMethod(env,obj,getName);
+  const char *name = (*env)->GetStringUTFChars(env, tname, NULL);
+  jdouble percentage=(*env)->CallDoubleMethod(env,obj,getPercentage);
+  printf("%d %s %f\n", id,name,percentage);
+  FILE *fp=fopen("C:\\Program Files (x86)\\Apache Software Foundation\\Tomcat 8.0\\webapps\\ROOT\\files\\record.txt","a");
+  fprintf(fp,"Id:%d\tName:%s\tPercentage:%f\n",id,name,percentage);
+  fclose(fp);
+  return (jboolean)1;
+}
+
+JNIEXPORT jboolean JNICALL Java_NativeService_insertList(JNIEnv *env, jobject thisObj, jobject arr, jobject user){
+  jclass arrayClass = (*env)->FindClass(env, "java/util/ArrayList");
+  jmethodID arrayInit =  (*env)->GetMethodID(env, arrayClass, "<init>", "()V");
+  jobject objArr = (*env)->NewObject(env, arrayClass, arrayInit);
+  jmethodID arrayGet = (*env)->GetMethodID(env, arrayClass, "get", "(I)Ljava/lang/Object;");
+  jmethodID arraySize = (*env)->GetMethodID(env, arrayClass, "size", "()I");
+  objArr=arr;
+  jint size=(*env)->CallIntMethod(env, objArr, arraySize);
+  printf("%d\n",size );
+  jclass thisClass=(*env)->GetObjectClass(env,user);
+  jmethodID classInit =  (*env)->GetMethodID(env, thisClass, "<init>", "()V");
+  jmethodID getId =  (*env)->GetMethodID(env, thisClass, "getId", "()I");
+  jmethodID getName =  (*env)->GetMethodID(env, thisClass, "getName", "()Ljava/lang/String;");
+  jmethodID getPercentage =  (*env)->GetMethodID(env, thisClass, "getPercentage", "()D");
+
+  FILE *fp=fopen("C:\\Program Files (x86)\\Apache Software Foundation\\Tomcat 8.0\\webapps\\ROOT\\files\\record.txt","a");
+  for(jint i=0;i<size;i++){
+    jobject obj=(*env)->NewObject(env, thisClass, classInit);
+    obj=(*env)->CallObjectMethod(env, objArr, arrayGet,i);
+    jint id=(*env)->CallIntMethod(env,obj,getId);
+    jstring tname=(*env)->CallObjectMethod(env,obj,getName);
+    const char *name = (*env)->GetStringUTFChars(env, tname, NULL);
+    jdouble percentage=(*env)->CallDoubleMethod(env,obj,getPercentage);
+    fprintf(fp,"Id:%d\tName:%s\tPercentage:%f\n",id,name,percentage);
+  }
+  fclose(fp);
+}
+
+JNIEXPORT jobject JNICALL Java_NativeService_view(JNIEnv *env, jobject thisObj,jobject user){
+
+  printf("view\n");
+  //jclass some=(*env)->FindClass(env,"java/some/class");
+
+  jclass arrayClass = (*env)->FindClass(env, "java/util/ArrayList");
+  jmethodID arrayInit =  (*env)->GetMethodID(env, arrayClass, "<init>", "()V");
+  jobject objArr = (*env)->NewObject(env, arrayClass, arrayInit);
+  jmethodID arrayAdd = (*env)->GetMethodID(env, arrayClass, "add", "(Ljava/lang/Object;)Z");
+
+  char ch[255];
+  FILE *fp;
+
+  jclass thisClass=(*env)->GetObjectClass(env,user);
+  jmethodID classInit =  (*env)->GetMethodID(env, thisClass, "<init>", "()V");
+  jmethodID setId =  (*env)->GetMethodID(env, thisClass, "setId", "(I)V");
+  jboolean flag = (*env)->ExceptionCheck(env);
+  if (flag) {
+    (*env)->ExceptionClear(env);
+    printf("Exception in native method");
+    jclass jcls =(*env)->FindClass(env,"java/lang/ClassNotFoundException");
+    (*env)->ThrowNew(env,jcls, "Exception in Native Method");
+  }
+  jmethodID setName =  (*env)->GetMethodID(env, thisClass, "setName", "(Ljava/lang/String;)V");
+  jmethodID setPercentage =  (*env)->GetMethodID(env, thisClass, "setPercentage", "(D)V");
+  char name[100];
+  int id;
+  jdouble percentage;
+
+
+  fp=fopen("C:\\Program Files (x86)\\Apache Software Foundation\\Tomcat 8.0\\webapps\\ROOT\\files\\record.txt","r");
+  while (fscanf(fp,"Id:%d\tName:%s\tPercentage:%lf\n",&id, name, &percentage) != EOF){
+    jobject obj=(*env)->NewObject(env, thisClass, classInit);
+    (*env)->CallVoidMethod(env, obj, setId,(jint)id);
+    (*env)->CallVoidMethod(env, obj, setName,(jint)id);
+    (*env)->CallVoidMethod(env, obj, setPercentage,(jdouble)percentage);
+    jboolean jbool=(*env)->CallBooleanMethod(env, objArr, arrayAdd,obj);
+  }
+  fclose(fp);
+  return objArr;
+}
